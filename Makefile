@@ -24,3 +24,6 @@ selfcheck:
 	poetry check
 
 check: selfcheck test lint
+
+start-debug:
+	poetry run flask --app page_analyzer/app --debug run
