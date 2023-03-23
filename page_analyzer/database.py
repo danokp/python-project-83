@@ -40,8 +40,3 @@ class Urls(DataBase):
             f"SELECT {', '.join(*args)} FROM urls ORDER BY {order_by} DESC;"
         )
         return self.cur.fetchall()
-
-# db = Urls()
-#
-# print(db.get('name', 'https://google.com'))
-# print(db.get_columns('id', ('id', 'name')))
