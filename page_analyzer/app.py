@@ -1,5 +1,5 @@
 import os
-from .database import Urls
+from .database import Urls, Url_checks
 from datetime import date
 from dotenv import load_dotenv
 from flask import Flask, request, render_template, flash, redirect, url_for
@@ -37,6 +37,7 @@ def list_pages():
             flash('Некорректный URL', category='error')
             if not url_user_input:
                 flash('URL обязателен', category='error')
+            db_urls.close()
             return render_template(
                 'index.html',
                 url=url_user_input
@@ -45,22 +46,43 @@ def list_pages():
             flash('Страница уже существует', category='info')
         else:
             flash('Страница успешно добавлена', category='success')
-            db_urls.insert(url, date.today())
-        return redirect(url_for('analize_page', id=db_urls.get('name', url)[0]))
+            db_urls.insert(
+                url=url,
+                date=date.today(),
+            )
+        id = db_urls.get('name', url)[0]
+        db_urls.close()
+        return redirect(url_for('analize_page', id=id))
     urls = db_urls.get_columns('id', ('id', 'name'))
+    db_urls.close()
     return render_template(
         'urls/index.html',
         urls=urls
     )
 
 
-@app.route('/urls/<id>', methods=['POST', 'GET'])
+@app.route('/urls/<id>')
 def analize_page(id):
     db_urls = Urls()
+    db_url_checks = Url_checks()
     url = db_urls.get('id', id)
+    checks = db_url_checks.get_columns_of_exact_url(id, 'id', ('id', 'created_at'))
     return render_template(
         'urls/id/index.html',
         id=url[0],
         name=url[1],
-        date=url[2]
+        date=url[2],
+        checks=checks
     )
+
+
+@app.post('/urls/<id>/checks')
+def check_page(id):
+    db_url_checks = Url_checks()
+    flash('Страница успешно проверена', category='success')
+    db_url_checks.insert(
+        url_id=id,
+        date=date.today(),
+    )
+    db_url_checks.close()
+    return redirect(url_for('analize_page', id=id))
