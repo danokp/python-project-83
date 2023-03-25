@@ -1,11 +1,13 @@
 import os
-from .database import Urls, Url_checks
 from datetime import date
+from urllib.parse import urlsplit, urlunsplit
+
+import requests
 from dotenv import load_dotenv
-from flask import Flask, request, render_template, flash, redirect, url_for
-from urllib.parse import urlunsplit, urlsplit
+from flask import Flask, flash, redirect, render_template, request, url_for
 from validators.url import url as is_valid_url
 
+from .database import UrlChecks, Urls
 
 app = Flask(__name__)
 load_dotenv()
@@ -33,14 +35,15 @@ def list_pages():
     if request.method == 'POST':
         url_user_input = request.form.get('url')
         url = normalize_url(url_user_input)
-        if len(url) > 255 or not is_valid_url(url):
+        max_url_len = 255
+        if len(url) > max_url_len or not is_valid_url(url):
             flash('Некорректный URL', category='error')
             if not url_user_input:
                 flash('URL обязателен', category='error')
             db_urls.close()
             return render_template(
                 'index.html',
-                url=url_user_input
+                url=url_user_input,
             )
         if db_urls.get('name', url):
             flash('Страница уже существует', category='info')
@@ -53,36 +56,52 @@ def list_pages():
         id = db_urls.get('name', url)[0]
         db_urls.close()
         return redirect(url_for('analize_page', id=id))
-    urls = db_urls.get_columns('id', ('id', 'name'))
-    db_urls.close()
+
+    db_url_checks = UrlChecks()
+    urls_checks = db_url_checks.join_with_urls()
+
     return render_template(
         'urls/index.html',
-        urls=urls
+        urls_checks=urls_checks,
     )
 
 
 @app.route('/urls/<id>')
 def analize_page(id):
     db_urls = Urls()
-    db_url_checks = Url_checks()
+    db_url_checks = UrlChecks()
     url = db_urls.get('id', id)
-    checks = db_url_checks.get_columns_of_exact_url(id, 'id', ('id', 'created_at'))
+    checks = db_url_checks.get_columns_of_exact_url(
+        id,
+        'id',
+        ('id', 'status_code', 'created_at'),
+    )
+    db_url_checks.close()
     return render_template(
         'urls/id/index.html',
         id=url[0],
         name=url[1],
         date=url[2],
-        checks=checks
+        checks=checks,
     )
 
 
 @app.post('/urls/<id>/checks')
 def check_page(id):
-    db_url_checks = Url_checks()
-    flash('Страница успешно проверена', category='success')
-    db_url_checks.insert(
-        url_id=id,
-        date=date.today(),
-    )
-    db_url_checks.close()
+    db_urls = Urls()
+    db_url_checks = UrlChecks()
+    url_name = db_urls.get('id', id)[1]
+    try:
+        request_result = requests.get(url_name)
+        status_code = request_result.status_code
+        flash('Страница успешно проверена', category='success')
+        db_url_checks.insert(
+            url_id=id,
+            status_code=status_code,
+            date=date.today(),
+        )
+        db_url_checks.close()
+        db_urls.close()
+    except requests.exceptions.RequestException:
+        flash('Произошла ошибка при проверке', category='error')
     return redirect(url_for('analize_page', id=id))

@@ -1,6 +1,6 @@
-import psycopg2
 import os
 
+import psycopg2
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -19,7 +19,6 @@ class DataBase():
     def close(self):
         self.cur.close()
         self.conn.close()
-
 
 
 class Urls(DataBase):
@@ -42,12 +41,12 @@ class Urls(DataBase):
         return self.cur.fetchall()
 
 
-class Url_checks(DataBase):
-    def insert(self, url_id, date):
+class UrlChecks(DataBase):
+    def insert(self, status_code, url_id, date):
         self.query(
             f"INSERT INTO url_checks"
-            f"(url_id, created_at) " # (url_id, status_code, h1, title, description, created_at)
-            f"VALUES ('{url_id}', '{date}');"
+            f"(url_id, status_code, created_at) "  # (url_id, status_code, h1, title, description, created_at)
+            f"VALUES ('{url_id}','{status_code}', '{date}');"
         )
         self.commit()
 
@@ -57,4 +56,39 @@ class Url_checks(DataBase):
             f"WHERE url_id={url_id} "
             f"ORDER BY {order_by} DESC;"
         )
+        return self.cur.fetchall()
+
+    def get_last_check_info(self):
+        return self.query(
+            """SELECT
+                url_checks.id,
+                url_checks.url_id,
+                url_checks.status_code,
+                url_checks.created_at
+            FROM url_checks
+            JOIN
+            (SELECT url_id, MAX(id) AS max_id FROM url_checks GROUP BY url_id)
+            AS url_checks2
+            ON url_checks.id = url_checks2.max_id
+            ORDER BY url_checks.url_id DESC;
+            """)
+
+    def join_with_urls(self):
+        self.query(
+            """SELECT
+                urls.id AS url_id,
+                urls.name,
+                url_checks.created_at,
+                url_checks.status_code
+            FROM urls
+            LEFT JOIN (
+                SELECT url_id, MAX(id) AS max_id
+                FROM url_checks
+                GROUP BY url_id
+            ) AS latest_checks
+            ON urls.id = latest_checks.url_id
+            LEFT JOIN url_checks
+            ON latest_checks.max_id = url_checks.id
+            ORDER BY url_id DESC;
+            """)
         return self.cur.fetchall()
