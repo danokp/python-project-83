@@ -43,9 +43,10 @@ class Urls(DataBase):
 
 class UrlChecks(DataBase):
     def insert(self, status_code, url_id, date):
+        # (url_id, status_code, h1, title, description, created_at)
         self.query(
             f"INSERT INTO url_checks"
-            f"(url_id, status_code, created_at) "  # (url_id, status_code, h1, title, description, created_at)
+            f"(url_id, status_code, created_at) "
             f"VALUES ('{url_id}','{status_code}', '{date}');"
         )
         self.commit()
