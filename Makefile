@@ -15,15 +15,9 @@ publish:
 	poetry publish --dry-run
 
 lint:
-	poetry run flake8 gendiff
-
-test-coverage:
-	poetry run pytest --cov=page_analyzer --cov-report xml
+	poetry run flake8 page_analyzer
 
 selfcheck:
 	poetry check
 
-check: selfcheck test lint
-
-start-debug:
-	poetry run flask --app page_analyzer/app --debug run
+check: selfcheck lint
