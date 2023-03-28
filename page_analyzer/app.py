@@ -1,6 +1,5 @@
 import os
 from datetime import date
-from urllib.parse import urlsplit, urlunsplit
 
 import requests
 from dotenv import load_dotenv
@@ -8,20 +7,11 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 from validators.url import url as is_valid_url
 
 from .database import UrlChecks, Urls
+from .validator import normalize_url
 
 app = Flask(__name__)
 load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-
-
-def normalize_url(url):
-    scheme, netloc = (
-        urlsplit(url).scheme.lower(),
-        urlsplit(url).netloc.lower(),
-    )
-    if netloc.startswith('www.'):
-        netloc = netloc[4:]
-    return urlunsplit((scheme, netloc, '', '', ''))
 
 
 @app.route('/')
