@@ -42,20 +42,28 @@ class Urls(DataBase):
 
 
 class UrlChecks(DataBase):
-    def insert(self, status_code, url_id, date):
-        # (url_id, status_code, h1, title, description, created_at)
+    def insert(self, status_code, h1, title, description, url_id, date):
         self.query(
-            f"INSERT INTO url_checks"
-            f"(url_id, status_code, created_at) "
-            f"VALUES ('{url_id}','{status_code}', '{date}');"
+            f"""INSERT INTO url_checks
+            (url_id, status_code, h1, title, description, created_at)
+            VALUES (
+                {url_id},
+                {status_code},
+                '{h1}',
+                '{title}',
+                '{description}',
+                '{date}'
+            );
+            """
         )
         self.commit()
 
     def get_columns_of_exact_url(self, url_id, order_by, *args):
         self.query(
-            f"SELECT {', '.join(*args)} FROM url_checks "
-            f"WHERE url_id={url_id} "
-            f"ORDER BY {order_by} DESC;"
+            f"""SELECT {', '.join(*args)} FROM url_checks
+            WHERE url_id={url_id}
+            ORDER BY {order_by} DESC;
+            """
         )
         return self.cur.fetchall()
 

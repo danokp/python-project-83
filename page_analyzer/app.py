@@ -7,7 +7,7 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 from validators.url import url as is_valid_url
 
 from .database import UrlChecks, Urls
-from .validator import normalize_url
+from .validator import normalize_url, scrap_web_page
 
 app = Flask(__name__)
 load_dotenv()
@@ -64,7 +64,7 @@ def analize_page(id):
     checks = db_url_checks.get_columns_of_exact_url(
         id,
         'id',
-        ('id', 'status_code', 'created_at'),
+        ('id', 'status_code', 'h1', 'title', 'description', 'created_at'),
     )
     db_url_checks.close()
     return render_template(
@@ -85,10 +85,15 @@ def check_page(id):
         request_result = requests.get(url_name)
         status_code = request_result.status_code
         flash('Страница успешно проверена', category='success')
+        h1, title, description = scrap_web_page(request_result)
+        print(description)
         db_url_checks.insert(
             url_id=id,
             status_code=status_code,
             date=date.today(),
+            h1=h1,
+            title=title,
+            description=description,
         )
         db_url_checks.close()
         db_urls.close()
