@@ -16,5 +16,3 @@ CREATE TABLE url_checks(
     description varchar(255),
     created_at date
 );
-
-
