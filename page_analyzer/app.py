@@ -7,7 +7,7 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 from validators.url import url as is_valid_url
 
 from .database import UrlChecks, Urls
-from .validator import normalize_url, scrap_web_page
+from .utils import normalize_url, scrap_web_page
 
 app = Flask(__name__)
 load_dotenv()
@@ -56,7 +56,7 @@ def list_pages():
     )
 
 
-@app.route('/urls/<id>')
+@app.route('/urls/<int:id>')
 def analize_page(id):
     db_urls = Urls()
     db_url_checks = UrlChecks()
@@ -76,7 +76,7 @@ def analize_page(id):
     )
 
 
-@app.post('/urls/<id>/checks')
+@app.post('/urls/<int:id>/checks')
 def check_page(id):
     db_urls = Urls()
     db_url_checks = UrlChecks()
