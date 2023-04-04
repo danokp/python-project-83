@@ -9,8 +9,9 @@ from validators.url import url as is_valid_url
 from .database import UrlChecks, Urls
 from .utils import normalize_url, scrap_web_page
 
-app = Flask(__name__)
+
 load_dotenv()
+app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 
