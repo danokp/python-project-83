@@ -79,25 +79,27 @@ def analize_page(id):
 
 @app.post('/urls/<int:id>/checks')
 def check_page(id):
-    db_urls = Urls()
-    db_url_checks = UrlChecks()
-    url_name = db_urls.get('id', id)[1]
     try:
+        db_urls = Urls()
+        db_url_checks = UrlChecks()
+        url_name = db_urls.get('id', id)[1]
         request_result = requests.get(url_name)
         status_code = request_result.status_code
-        flash('Страница успешно проверена', category='success')
-        h1, title, description = scrap_web_page(request_result)
-        print(description)
-        db_url_checks.insert(
-            url_id=id,
-            status_code=status_code,
-            date=date.today(),
-            h1=h1,
-            title=title,
-            description=description,
-        )
-        db_url_checks.close()
-        db_urls.close()
+        if status_code < 400:
+            flash('Страница успешно проверена', category='success')
+            h1, title, description = scrap_web_page(request_result)
+            db_url_checks.insert(
+                url_id=id,
+                status_code=status_code,
+                date=date.today(),
+                h1=h1,
+                title=title,
+                description=description,
+            )
+            db_url_checks.close()
+            db_urls.close()
+        else:
+            flash('Произошла ошибка при проверке', category='error')
     except requests.exceptions.RequestException:
         flash('Произошла ошибка при проверке', category='error')
     return redirect(url_for('analize_page', id=id))
