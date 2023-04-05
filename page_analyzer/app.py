@@ -6,12 +6,12 @@ from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
 from validators.url import url as is_valid_url
 
-load_dotenv()
-from .database import UrlChecks, Urls # noqa
-from .utils import normalize_url, scrap_web_page # noqa
+from .database import UrlChecks, Urls
+from .utils import normalize_url, scrap_web_page
 
 
 app = Flask(__name__)
+load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 
