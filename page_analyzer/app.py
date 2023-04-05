@@ -35,7 +35,7 @@ def list_pages():
             return render_template(
                 'index.html',
                 url=url_user_input,
-            )
+            ), 422
         if db_urls.get('name', url):
             flash('Страница уже существует', category='info')
         else:
