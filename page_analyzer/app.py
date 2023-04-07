@@ -20,41 +20,42 @@ def homepage():
     return render_template('index.html')
 
 
-@app.route('/urls', methods=['POST', 'GET'])
+@app.route('/urls')
 def list_pages():
-    db_urls = Urls()
-    if request.method == 'POST':
-        url_user_input = request.form.get('url')
-        url = normalize_url(url_user_input)
-        max_url_len = 255
-        if len(url) > max_url_len or not is_valid_url(url):
-            flash('Некорректный URL', category='error')
-            if not url_user_input:
-                flash('URL обязателен', category='error')
-            db_urls.close()
-            return render_template(
-                'index.html',
-                url=url_user_input,
-            ), 422
-        if db_urls.get('name', url):
-            flash('Страница уже существует', category='info')
-        else:
-            flash('Страница успешно добавлена', category='success')
-            db_urls.insert(
-                url=url,
-                date=date.today(),
-            )
-        id = db_urls.get('name', url)[0]
-        db_urls.close()
-        return redirect(url_for('analize_page', id=id))
-
     db_url_checks = UrlChecks()
     urls_checks = db_url_checks.join_with_urls()
-
     return render_template(
         'urls/index.html',
         urls_checks=urls_checks,
     )
+
+
+@app.post('/urls')
+def add_new_page():
+    db_urls = Urls()
+    url_user_input = request.form.get('url')
+    url = normalize_url(url_user_input)
+    max_url_len = 255
+    if len(url) > max_url_len or not is_valid_url(url):
+        flash('Некорректный URL', category='error')
+        if not url_user_input:
+            flash('URL обязателен', category='error')
+        db_urls.close()
+        return render_template(
+            'index.html',
+            url=url_user_input,
+        ), 422
+    if db_urls.get('name', url):
+        flash('Страница уже существует', category='info')
+    else:
+        flash('Страница успешно добавлена', category='success')
+        db_urls.insert(
+            url=url,
+            date=date.today(),
+        )
+    id = db_urls.get('name', url)[0]
+    db_urls.close()
+    return redirect(url_for('analize_page', id=id))
 
 
 @app.route('/urls/<int:id>')
