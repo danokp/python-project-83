@@ -55,11 +55,11 @@ def add_new_page():
         )
     id = db_urls.get('name', url)[0]
     db_urls.close()
-    return redirect(url_for('analize_page', id=id))
+    return redirect(url_for('analyze_page', id=id))
 
 
 @app.route('/urls/<int:id>')
-def analize_page(id):
+def analyze_page(id):
     db_urls = Urls()
     db_url_checks = UrlChecks()
     url = db_urls.get('id', id)
@@ -101,4 +101,4 @@ def check_page(id):
         db_urls.close()
     except requests.exceptions.RequestException:
         flash('Произошла ошибка при проверке', category='error')
-    return redirect(url_for('analize_page', id=id))
+    return redirect(url_for('analyze_page', id=id))
