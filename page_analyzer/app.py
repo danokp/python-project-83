@@ -4,9 +4,8 @@ from datetime import date
 import requests
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
-from validators.url import url as is_valid_url
 
-from .utils import normalize_url, scrap_web_page
+from .utils import check_url, scrap_web_page
 load_dotenv()
 from .database import UrlChecks, Urls  # noqa:E402
 
@@ -34,12 +33,10 @@ def list_pages():
 def add_new_page():
     db_urls = Urls()
     url_user_input = request.form.get('url')
-    url = normalize_url(url_user_input)
-    max_url_len = 255
-    if len(url) > max_url_len or not is_valid_url(url):
-        flash('Некорректный URL', category='error')
-        if not url_user_input:
-            flash('URL обязателен', category='error')
+    url, errors = check_url(url_user_input)
+    if errors:
+        for error in errors:
+            flash(error, category='error')
         db_urls.close()
         return render_template(
             'index.html',
