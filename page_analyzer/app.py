@@ -101,4 +101,3 @@ def check_page(id):
     db_url_checks.close()
     db_urls.close()
     return redirect(url_for('analyze_page', id=id))
-
