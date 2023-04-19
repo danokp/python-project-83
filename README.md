@@ -4,7 +4,7 @@
 
 # Page Analyzer
 
-Want to check your website for SEO suitability? Use [Page Analyzer](https://railway.app/project/38293dd8-2a76-4992-bf74-d081d15c8862/service/b968dff4-af18-4038-9e37-684ea066cc55/settings)!
+Want to check your website for SEO suitability? Use [Page Analyzer](https://python-project-83-production-bcc2.up.railway.app/)!
 
 ## Installation
 To download and install this project use the following commands:
