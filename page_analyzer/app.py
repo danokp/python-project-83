@@ -77,29 +77,28 @@ def analyze_page(id):
 
 @app.post('/urls/<int:id>/checks')
 def check_page(id):
+    db_urls = Urls()
+    url_name = db_urls.get('id', id)[1]
     try:
-        db_urls = Urls()
-        db_url_checks = UrlChecks()
-        url_name = db_urls.get('id', id)[1]
         response = requests.get(url_name)
-        try:
-            response.raise_for_status()
-        except requests.exceptions.RequestException:
-            flash('Произошла ошибка при проверке', category='error')
-        else:
-            flash('Страница успешно проверена', category='success')
-            h1, title, description = scrap_web_page(response)
-            status_code = response.status_code
-            db_url_checks.insert(
-                url_id=id,
-                status_code=status_code,
-                date=date.today(),
-                h1=h1,
-                title=title,
-                description=description,
-            )
-            db_url_checks.close()
-            db_urls.close()
-        return redirect(url_for('analyze_page', id=id))
+        response.raise_for_status()
     except requests.exceptions.RequestException:
-        raise Exception
+        flash('Произошла ошибка при проверке', category='error')
+        db_urls.close()
+        return redirect(url_for('analyze_page', id=id))
+    flash('Страница успешно проверена', category='success')
+    h1, title, description = scrap_web_page(response)
+    status_code = response.status_code
+    db_url_checks = UrlChecks()
+    db_url_checks.insert(
+        url_id=id,
+        status_code=status_code,
+        date=date.today(),
+        h1=h1,
+        title=title,
+        description=description,
+    )
+    db_url_checks.close()
+    db_urls.close()
+    return redirect(url_for('analyze_page', id=id))
+
