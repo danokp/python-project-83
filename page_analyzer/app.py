@@ -24,7 +24,7 @@ def list_pages():
     db_url_checks = UrlChecks()
     urls_checks = db_url_checks.join_with_urls()
     return render_template(
-        'urls/index.html',
+        'urls.html',
         urls_checks=urls_checks,
     )
 
@@ -67,7 +67,7 @@ def analyze_page(id):
     )
     db_url_checks.close()
     return render_template(
-        'urls/id/index.html',
+        'url.html',
         id=url[0],
         name=url[1],
         date=url[2],
