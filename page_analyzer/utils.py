@@ -16,10 +16,13 @@ def check_url(url):
 
     errors = []
     normalized_url = normalize_url(url)
-    if len(normalized_url) > MAX_URL_LEN or not is_valid_url(normalized_url):
+    if not url:
+        errors.extend((
+            'Некорректный URL',
+            'URL обязателен'
+        ))
+    elif len(normalized_url) > MAX_URL_LEN or not is_valid_url(normalized_url):
         errors.append('Некорректный URL')
-        if not url:
-            errors.append('URL обязателен')
     return normalized_url, errors
 
 
