@@ -5,7 +5,8 @@ import requests
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
 
-from .utils import check_url, scrap_web_page
+from .url_processing import check_url
+from .web_scraping import scrap_web_page
 load_dotenv()
 from .database import UrlChecks, Urls  # noqa:E402
 

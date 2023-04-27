@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 from validators.url import url as is_valid_url
 from urllib.parse import urlsplit, urlunsplit
 
@@ -24,21 +23,3 @@ def check_url(url):
     elif len(normalized_url) > MAX_URL_LEN or not is_valid_url(normalized_url):
         errors.append('Некорректный URL')
     return normalized_url, errors
-
-
-def scrap_web_page(page):
-    soup = BeautifulSoup(page.content, "html.parser")
-    h1 = soup.h1
-    title = soup.title
-    content = soup.find('meta', attrs={'name': 'description'})
-    return (
-        truncate_string(h1.get_text(strip=True)) if h1 else '',
-        truncate_string(title.get_text(strip=True)) if title else '',
-        truncate_string(content['content']) if content else '',
-    )
-
-
-def truncate_string(string, limit=255, ending='...'):
-    if len(string) <= 255:
-        return string
-    return string[:limit - len(ending)] + ending
