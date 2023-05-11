@@ -8,7 +8,7 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 from .url_processing import check_url
 from .web_scraping import scrap_web_page
 load_dotenv()
-from .database import UrlChecks, Urls  # noqa:E402
+import page_analyzer.database as db  # noqa:E402
 
 
 app = Flask(__name__)
@@ -22,8 +22,9 @@ def homepage():
 
 @app.route('/urls')
 def list_pages():
-    db_url_checks = UrlChecks()
-    urls_checks = db_url_checks.join_with_urls()
+    db_conn, db_cur = db.initiate_conn()
+    urls_checks = db.join_urlchecks_with_urls(db_cur)
+    db.close_conn(db_conn, db_cur)
     return render_template(
         'urls.html',
         urls_checks=urls_checks,
@@ -32,41 +33,43 @@ def list_pages():
 
 @app.post('/urls')
 def add_new_page():
-    db_urls = Urls()
     url_user_input = request.form.get('url')
     url, errors = check_url(url_user_input)
     if errors:
         for error in errors:
             flash(error, category='error')
-        db_urls.close()
         return render_template(
             'index.html',
             url=url_user_input,
         ), 422
-    if db_urls.get('name', url):
+
+    db_conn, db_cur = db.initiate_conn()
+    if db.get_from_urls(db_cur, 'name', url):
         flash('Страница уже существует', category='info')
     else:
         flash('Страница успешно добавлена', category='success')
-        db_urls.insert(
+        db.insert_in_urls(
+            db_conn,
+            db_cur,
             url=url,
             date=date.today(),
         )
-    id = db_urls.get('name', url)[0]
-    db_urls.close()
+    id = db.get_from_urls(db_cur, 'name', url)[0]
+    db.close_conn(db_conn, db_cur)
     return redirect(url_for('analyze_page', id=id))
 
 
 @app.route('/urls/<int:id>')
 def analyze_page(id):
-    db_urls = Urls()
-    db_url_checks = UrlChecks()
-    url = db_urls.get('id', id)
-    checks = db_url_checks.get_columns_of_exact_url(
+    db_conn, db_cur = db.initiate_conn()
+    url = db.get_from_urls(db_cur, 'id', id)
+    checks = db.get_columns_of_exact_url_from_urlchecks(
+        db_cur,
         id,
         'id',
         ('id', 'status_code', 'h1', 'title', 'description', 'created_at'),
     )
-    db_url_checks.close()
+    db.close_conn(db_conn, db_cur)
     return render_template(
         'url.html',
         id=url[0],
@@ -78,20 +81,21 @@ def analyze_page(id):
 
 @app.post('/urls/<int:id>/checks')
 def check_page(id):
-    db_urls = Urls()
-    url_name = db_urls.get('id', id)[1]
+    db_conn, db_cur = db.initiate_conn()
+    url_name = db.get_from_urls(db_cur, 'id', id)[1]
     try:
         response = requests.get(url_name)
         response.raise_for_status()
     except requests.exceptions.RequestException:
         flash('Произошла ошибка при проверке', category='error')
-        db_urls.close()
+        db.close_conn(db_conn, db_cur)
         return redirect(url_for('analyze_page', id=id))
     flash('Страница успешно проверена', category='success')
     h1, title, description = scrap_web_page(response)
     status_code = response.status_code
-    db_url_checks = UrlChecks()
-    db_url_checks.insert(
+    db.insert_in_urlchecks(
+        db_conn,
+        db_cur,
         url_id=id,
         status_code=status_code,
         date=date.today(),
@@ -99,6 +103,5 @@ def check_page(id):
         title=title,
         description=description,
     )
-    db_url_checks.close()
-    db_urls.close()
+    db.close_conn(db_conn, db_cur)
     return redirect(url_for('analyze_page', id=id))
