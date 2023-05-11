@@ -15,6 +15,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
 @app.route('/')
 def homepage():
     return render_template('index.html')
@@ -63,20 +68,22 @@ def add_new_page():
 def analyze_page(id):
     db_conn, db_cur = db.initiate_conn()
     url = db.get_from_urls(db_cur, 'id', id)
-    checks = db.get_columns_of_exact_url_from_urlchecks(
-        db_cur,
-        id,
-        'id',
-        ('id', 'status_code', 'h1', 'title', 'description', 'created_at'),
-    )
-    db.close_conn(db_conn, db_cur)
-    return render_template(
-        'url.html',
-        id=url[0],
-        name=url[1],
-        date=url[2],
-        checks=checks,
-    )
+    if url:
+        checks = db.get_columns_of_exact_url_from_urlchecks(
+            db_cur,
+            id,
+            'id',
+            ('id', 'status_code', 'h1', 'title', 'description', 'created_at'),
+        )
+        db.close_conn(db_conn, db_cur)
+        return render_template(
+            'url.html',
+            id=url[0],
+            name=url[1],
+            date=url[2],
+            checks=checks,
+        )
+    return render_template('404.html'), 404
 
 
 @app.post('/urls/<int:id>/checks')
