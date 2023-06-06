@@ -13,4 +13,4 @@ RUN poetry install --no-dev
 
 EXPOSE 8000
 
-CMD poetry run gunicorn -w 5 -b 0.0.0.0:5000 page_analyzer:app
+CMD poetry run gunicorn -w 5 -b 0.0.0.0:8000 page_analyzer:app

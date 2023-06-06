@@ -5,9 +5,12 @@ services:
     image: postgres:15
     container_name: database
     volumes:
-      - ~/.pg/pg_data/page-analyzer:/var/lib/postgresql/data
+      - ./database.sql:/docker-entrypoint-initdb.d/database.sql
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db
   page_analyzer:
     build:
       dockerfile: Dockerfile
@@ -16,10 +19,12 @@ services:
     container_name: page-analyzer
     depends_on:
       - database
-#    ports:
-#      - '5000:5000'
+    ports:
+      - '8000:8000'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     env_file:
       - .env
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@database:5432/db
     command: poetry run gunicorn -w 5 -b 0.0.0.0:8000 page_analyzer:app
