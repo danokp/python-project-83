@@ -5,20 +5,34 @@
 # Page Analyzer
 
 Want to check your website for SEO suitability? Use [Page Analyzer](https://python-project-83-production-bcc2.up.railway.app/)!
-
 ## Installation
 To download and install this project use the following commands:
 ```bash
 git clone https://github.com/danokp/python-project-83.git
 cd python-project-83
-make install # Install all needed dependencies.
 ```
 ## Usage
-1. Run the application:
+
+Run application on your computer using one following options:
+- Docker 
+- Virtual environment using Poetry
+
+1. __Docker__
+
+1.1. Run the application:
 ```bash
+docker compose up # Create docker containers and run docker image.
+```
+1.2. Open the application in web browser at [http://localhost:8000](http://localhost:8000).
+
+2. __Virtual environment using Poetry__
+
+2.1. Run the application:
+```bash
+make install # Install all needed dependencies.
 make local_start
 ```
-2. Open the application in web browser at [http://localhost:5000](http://localhost:5000).
+2.2. Open the application in web browser at [http://localhost:5000](http://localhost:5000).
 3. Enter the URL you want to analyze and click **CHECK** button. The URL will be aded into websites' database.
 4. On the opened paged you can see results of all completed checks and run another one with use of **START CHECKING** button.
 
