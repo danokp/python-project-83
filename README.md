@@ -8,8 +8,8 @@ Want to check your website for SEO suitability? Use [Page Analyzer](https://pyth
 ## Installation
 To download and install this project use the following commands:
 ```bash
-git clone https://github.com/danokp/python-project-83.git
-cd python-project-83
+git clone git@github.com:danokp/seo-page-analyzer.git
+cd seo-page-analyzer
 ```
 ## Usage
 
@@ -21,7 +21,7 @@ Run application on your computer using one following options:
 
 1.1. Run the application:
 ```bash
-docker compose up # Create docker containers and run docker image.
+docker compose up
 ```
 1.2. Open the application in web browser at [http://localhost:8000](http://localhost:8000).
 
